@@ -1,0 +1,18 @@
+[project]
+name = "leftweeks"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "click>=8.1.8",
+    "matplotlib>=3.10.1",
+]
+
+[project.scripts]
+#hello = "leftweeks:hello"
+leftweeks = "leftweeks.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
