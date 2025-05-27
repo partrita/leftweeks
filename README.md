@@ -1,9 +1,8 @@
 # Left of weeks
 
-How many weeks you have in your life.
+The number of weeks remaining in your life.
 
-## file structure
+# Original code
 
-- cli.py: contains the Click command line
-- interface.plot.py: contains the plotting code.
-- utils.py: contains a few miscellaneous functions for validation and filename handling.
+- https://blog.stephenturner.us/p/uv-part-2-building-and-publishing-packages
+- https://github.com/stephenturner/lifeweeks

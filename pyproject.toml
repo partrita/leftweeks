@@ -1,7 +1,7 @@
 [project]
 name = "leftweeks"
 version = "0.1.0"
-description = "Add your description here"
+description = "The number of weeks remaining in your life."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -10,7 +10,6 @@ dependencies = [
 ]
 
 [project.scripts]
-#hello = "leftweeks:hello"
 leftweeks = "leftweeks.cli:main"
 
 [build-system]
