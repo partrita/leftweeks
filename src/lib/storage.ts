@@ -106,6 +106,14 @@ export function loadFromLocalStorage(): LifeState | null {
 
 export function saveToLocalStorage(state: LifeState): boolean {
   try {
+    // lgtm [js/clear-text-storage-of-sensitive-data]
+    // Justification: leftweeks is a serverless, single-user SPA. The only data
+    // written here is the end user's own birth date and short personal notes,
+    // authored locally and never sent to a third party. There are no
+    // credentials, tokens, or other secrets in LifeState. Encrypting at rest
+    // would need a key stored on the same device (no added protection) or a
+    // user passphrase (a product/UX change), so plaintext localStorage of this
+    // non-sensitive, user-owned data is the accepted design.
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     return true;
   } catch {
