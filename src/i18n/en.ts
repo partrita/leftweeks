@@ -4,6 +4,7 @@ export const en: Dictionary = {
   appTitle: "Leftweeks",
   appSubtitle: "Your Life in Weeks",
   birthDateLabel: "Birth Date",
+  birthDateInvalid: "Check the date (e.g. 1995-01-01)",
   lifeExpectancyLabel: "Life Expectancy",
   yearsUnit: "yrs",
   ageFormat: (age: number) => `Age ${age}`,

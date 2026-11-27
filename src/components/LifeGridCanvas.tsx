@@ -182,6 +182,10 @@ export function LifeGridCanvas({
       return;
     }
     const cell = getWeekRange(state.birthDate, hit.year, hit.week);
+    if (!cell) {
+      setHovered(null);
+      return;
+    }
     setHovered({ cell, clientX: e.clientX, clientY: e.clientY });
   }
 
@@ -203,7 +207,7 @@ export function LifeGridCanvas({
       onMobileYearTap(hit.year);
     } else {
       const cell = getWeekRange(state.birthDate, hit.year, hit.week);
-      onDesktopCellClick(cell);
+      if (cell) onDesktopCellClick(cell);
     }
   }
 
@@ -223,7 +227,8 @@ export function LifeGridCanvas({
       setFocused({ year: Math.max(0, cur.year - 1), week: cur.week });
     } else if (e.key === "Enter" && focused) {
       e.preventDefault();
-      onDesktopCellClick(getWeekRange(state.birthDate, focused.year, focused.week));
+      const cell = getWeekRange(state.birthDate, focused.year, focused.week);
+      if (cell) onDesktopCellClick(cell);
     }
   }
 
