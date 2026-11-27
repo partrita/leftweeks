@@ -6,7 +6,11 @@ import { NoteEditorModal } from "./components/NoteEditorModal";
 import { ShareModal } from "./components/ShareModal";
 import { detectInitialLocale, formatDateRangeUtc, getDictionary } from "./i18n";
 import { exportChartAsPng } from "./lib/exportPng";
-import { buildLifeSummary, getWeekRange } from "./lib/lifeCalendar";
+import {
+  buildLifeSummary,
+  getWeekRange,
+  isPlausibleBirthDate,
+} from "./lib/lifeCalendar";
 import { decodeStateFromHash } from "./lib/shareUrl";
 import {
   createSampleState,
@@ -141,9 +145,12 @@ export function App() {
         locale={state.locale}
         isReadOnly={viewMode === "shared"}
         t={t}
-        onBirthDateChange={(birthDate) =>
-          birthDate && setState((prev) => ({ ...prev, birthDate }))
-        }
+        onBirthDateChange={(birthDate) => {
+          // Ignore half-typed or out-of-range values so an unusable date never
+          // reaches the grid.
+          if (!isPlausibleBirthDate(birthDate)) return;
+          setState((prev) => ({ ...prev, birthDate }));
+        }}
         onLifeExpectancyChange={(lifeExpectancy) =>
           setState((prev) => ({ ...prev, lifeExpectancy }))
         }
@@ -260,6 +267,7 @@ export function App() {
             <ul className="mt-2 space-y-1 text-xs text-slate-700">
               {sortedNotes.map(({ key, year, week, note }) => {
                 const cell = getWeekRange(state.birthDate, year, week);
+                if (!cell) return null;
                 return (
                   <li key={key}>
                     <strong>

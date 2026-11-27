@@ -22,12 +22,14 @@ describe("lifeCalendar", () => {
 
   it("absorbs leftover days in week 51 (8 days in normal year, 9 in leap year)", () => {
     const w51Normal = getWeekRange("1995-01-01", 0, 51, Date.UTC(2025, 0, 1));
-    expect((w51Normal.endUtcMs - w51Normal.startUtcMs) / 86_400_000 + 1).toBe(8);
-    expect(w51Normal.endUtcMs).toBe(Date.UTC(1995, 11, 31));
+    expect(w51Normal).not.toBeNull();
+    expect((w51Normal!.endUtcMs - w51Normal!.startUtcMs) / 86_400_000 + 1).toBe(8);
+    expect(w51Normal!.endUtcMs).toBe(Date.UTC(1995, 11, 31));
 
     const w51Leap = getWeekRange("1996-01-01", 0, 51, Date.UTC(2025, 0, 1));
-    expect((w51Leap.endUtcMs - w51Leap.startUtcMs) / 86_400_000 + 1).toBe(9);
-    expect(w51Leap.endUtcMs).toBe(Date.UTC(1996, 11, 31));
+    expect(w51Leap).not.toBeNull();
+    expect((w51Leap!.endUtcMs - w51Leap!.startUtcMs) / 86_400_000 + 1).toBe(9);
+    expect(w51Leap!.endUtcMs).toBe(Date.UTC(1996, 11, 31));
   });
 
   it("handles future birth dates and ages exceeding life expectancy without error", () => {

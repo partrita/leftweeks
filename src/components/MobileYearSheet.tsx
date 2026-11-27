@@ -89,10 +89,12 @@ export function MobileYearSheet({
                 {t.ageFormat(year)} · {t.weekLabel(selectedWeek)}
               </div>
               <div className="mt-0.5 text-xs text-slate-500">
-                {formatDateRangeUtc(selectedCell.startUtcMs, selectedCell.endUtcMs, locale)}
+                {selectedCell
+                  ? formatDateRangeUtc(selectedCell.startUtcMs, selectedCell.endUtcMs, locale)
+                  : t.birthDateInvalid}
               </div>
             </div>
-            {!isReadOnly && (
+            {!isReadOnly && selectedCell && (
               <button
                 type="button"
                 onClick={() => onEditNote(selectedCell)}
@@ -112,6 +114,7 @@ export function MobileYearSheet({
             const cell = getWeekRange(birthDate, year, w);
             const note = notes[makeNoteKey(year, w)];
             const isSelected = w === selectedWeek;
+            const status = cell?.status ?? "remaining";
             return (
               <button
                 key={w}
@@ -122,9 +125,9 @@ export function MobileYearSheet({
                     ? "border-slate-900 ring-2 ring-slate-900"
                     : "border-slate-200"
                 } ${
-                  cell.status === "current"
+                  status === "current"
                     ? "bg-slate-900 text-white"
-                    : cell.status === "lived"
+                    : status === "lived"
                       ? "bg-slate-200 text-slate-800"
                       : "bg-white text-slate-600"
                 }`}

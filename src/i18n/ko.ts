@@ -2,6 +2,7 @@ export const ko = {
   appTitle: "Leftweeks",
   appSubtitle: "주차별 인생 그래프",
   birthDateLabel: "생년월일",
+  birthDateInvalid: "날짜를 확인해 주세요 (예: 1995-01-01)",
   lifeExpectancyLabel: "기대 수명",
   yearsUnit: "세",
   ageFormat: (age: number) => `만 ${age}세`,

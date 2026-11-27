@@ -1,4 +1,10 @@
+import { useEffect, useState } from "react";
 import type { Dictionary } from "../i18n/ko";
+import {
+  getLocalTodayIsoDate,
+  isPlausibleBirthDate,
+  MIN_BIRTH_YEAR,
+} from "../lib/lifeCalendar";
 import {
   MAX_LIFE_EXPECTANCY,
   MIN_LIFE_EXPECTANCY,
@@ -19,6 +25,8 @@ interface ControlsBarProps {
   onPrint: () => void;
 }
 
+const MIN_BIRTH_DATE_ISO = `${MIN_BIRTH_YEAR}-01-01`;
+
 export function ControlsBar({
   birthDate,
   lifeExpectancy,
@@ -32,6 +40,25 @@ export function ControlsBar({
   onExportPng,
   onPrint,
 }: ControlsBarProps) {
+  // The date field keeps its own draft so a half-typed value stays on screen
+  // while the chart keeps the last valid birth date.
+  const [dateDraft, setDateDraft] = useState(birthDate);
+
+  useEffect(() => {
+    setDateDraft(birthDate);
+  }, [birthDate]);
+
+  const todayIsoDate = getLocalTodayIsoDate();
+  const draftIsUnusable =
+    dateDraft !== "" && dateDraft !== birthDate && !isPlausibleBirthDate(dateDraft);
+
+  function handleBirthDateInput(value: string) {
+    setDateDraft(value);
+    if (isPlausibleBirthDate(value)) {
+      onBirthDateChange(value);
+    }
+  }
+
   return (
     <header className="no-print sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
@@ -45,13 +72,31 @@ export function ControlsBar({
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-xs font-medium text-slate-700">
             <span>{t.birthDateLabel}</span>
-            <input
-              type="date"
-              value={birthDate}
-              disabled={isReadOnly}
-              onChange={(e) => onBirthDateChange(e.target.value)}
-              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-900 focus:border-slate-900 focus:outline-none disabled:bg-slate-100"
-            />
+            <span className="flex flex-col">
+              <input
+                type="date"
+                value={dateDraft}
+                min={MIN_BIRTH_DATE_ISO}
+                max={todayIsoDate}
+                disabled={isReadOnly}
+                aria-invalid={draftIsUnusable || undefined}
+                aria-describedby={draftIsUnusable ? "birth-date-hint" : undefined}
+                onChange={(e) => handleBirthDateInput(e.target.value)}
+                className={`rounded-md border bg-white px-2 py-1 text-xs text-slate-900 focus:outline-none disabled:bg-slate-100 ${
+                  draftIsUnusable
+                    ? "border-rose-400 focus:border-rose-500"
+                    : "border-slate-300 focus:border-slate-900"
+                }`}
+              />
+              {draftIsUnusable && (
+                <span
+                  id="birth-date-hint"
+                  className="mt-0.5 text-[10px] font-normal text-rose-600"
+                >
+                  {t.birthDateInvalid}
+                </span>
+              )}
+            </span>
           </label>
 
           <label className="flex items-center gap-2 text-xs font-medium text-slate-700">
