@@ -48,11 +48,16 @@ export function App() {
   useEffect(() => {
     if (hydrated) return;
     let cancelled = false;
-    void loadFromLocalStorage().then((stored) => {
-      if (cancelled) return;
-      if (stored) setState(stored);
-      setHydrated(true);
-    });
+    void loadFromLocalStorage()
+      .then((stored) => {
+        if (cancelled) return;
+        if (stored) setState(stored);
+        setHydrated(true);
+      })
+      .catch(() => {
+        // Never leave the page blank because a read failed.
+        if (!cancelled) setHydrated(true);
+      });
     return () => {
       cancelled = true;
     };
