@@ -21,18 +21,16 @@ import {
   type WeekNote,
 } from "./types/life";
 
-function initApp(): { state: LifeState; viewMode: ViewMode } {
+function initApp(): { state: LifeState; viewMode: ViewMode; hydrated: boolean } {
   const fromHash = decodeStateFromHash(window.location.hash);
   if (fromHash) {
-    return { state: fromHash, viewMode: "shared" };
+    return { state: fromHash, viewMode: "shared", hydrated: true };
   }
-  const fromStorage = loadFromLocalStorage();
-  if (fromStorage) {
-    return { state: fromStorage, viewMode: "local" };
-  }
+  // The saved state is encrypted, so it is decrypted after the first render.
   return {
     state: createSampleState(detectInitialLocale()),
     viewMode: "local",
+    hydrated: false,
   };
 }
 
@@ -40,6 +38,7 @@ export function App() {
   const initial = useMemo(() => initApp(), []);
   const [state, setState] = useState<LifeState>(initial.state);
   const [viewMode, setViewMode] = useState<ViewMode>(initial.viewMode);
+  const [hydrated, setHydrated] = useState(initial.hydrated);
   const [editingCell, setEditingCell] = useState<WeekCellInfo | null>(null);
   const [mobileYear, setMobileYear] = useState<number | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
@@ -47,19 +46,32 @@ export function App() {
   const saveTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (viewMode !== "local") return;
+    if (hydrated) return;
+    let cancelled = false;
+    void loadFromLocalStorage().then((stored) => {
+      if (cancelled) return;
+      if (stored) setState(stored);
+      setHydrated(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated]);
+
+  useEffect(() => {
+    if (viewMode !== "local" || !hydrated) return;
     if (saveTimerRef.current !== null) {
       window.clearTimeout(saveTimerRef.current);
     }
     saveTimerRef.current = window.setTimeout(() => {
-      saveToLocalStorage(state);
+      void saveToLocalStorage(state);
     }, 250);
     return () => {
       if (saveTimerRef.current !== null) {
         window.clearTimeout(saveTimerRef.current);
       }
     };
-  }, [state, viewMode]);
+  }, [state, viewMode, hydrated]);
 
   const t = getDictionary(state.locale);
   const summary = useMemo(
@@ -68,13 +80,13 @@ export function App() {
   );
 
   function handleAdoptShared() {
-    saveToLocalStorage(state);
+    void saveToLocalStorage(state);
     setViewMode("local");
     window.history.replaceState(null, "", window.location.pathname);
   }
 
-  function handleReturnToLocal() {
-    const local = loadFromLocalStorage() ?? createSampleState(state.locale);
+  async function handleReturnToLocal() {
+    const local = (await loadFromLocalStorage()) ?? createSampleState(state.locale);
     setState(local);
     setViewMode("local");
     window.history.replaceState(null, "", window.location.pathname);
@@ -111,6 +123,10 @@ export function App() {
       .filter((item) => item.year < state.lifeExpectancy)
       .sort((a, b) => a.year - b.year || a.week - b.week);
   }, [state.notes, state.lifeExpectancy]);
+
+  if (!hydrated) {
+    return <div className="min-h-screen bg-slate-50" aria-busy="true" />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 pb-12">
@@ -288,7 +304,7 @@ export function App() {
           onImportState={(next) => {
             setState(next);
             setViewMode("local");
-            saveToLocalStorage(next);
+            void saveToLocalStorage(next);
           }}
           onClose={() => setShareOpen(false)}
         />
